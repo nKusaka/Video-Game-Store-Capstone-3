@@ -3,6 +3,7 @@ package org.yearup.controllers;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.ibatis.annotations.Results;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.yearup.data.CategoryDao;
 import org.yearup.data.ProductDao;
@@ -21,13 +22,12 @@ import java.util.List;
     // http://localhost:8080/categories
 // add annotation to allow cross site origin requests
 @RestController
+@RequestMapping("categories")
 @CrossOrigin
-@RequestMapping("/categories")
 public class CategoriesController
 {
     private CategoryDao categoryDao;
     private ProductDao productDao;
-    private BasicDataSource basicDataSource;
 
 
     // create an Autowired controller to inject the categoryDao and ProductDao
@@ -37,35 +37,38 @@ public class CategoriesController
         this.productDao = productDao;
     }
     // add the appropriate annotation for a get action
-    @GetMapping("/categories")
+    @GetMapping("")
+    @PreAuthorize("permitAll()")
     public List<Category> getAll()
     {
         return categoryDao.getAllCategories();
     }
 
     // add the appropriate annotation for a get action
-    @GetMapping("/categories/{id}")
+    @GetMapping("{id}")
+    @PreAuthorize("permitAll()")
     public Category getById(@PathVariable int id)
     {
-        // get the category by id
-        return null;
+        return categoryDao.getById(id);
     }
 
     // the url to return all products in category 1 would look like this
     // https://localhost:8080/categories/1/products
     @GetMapping("{categoryId}/products")
+    @PreAuthorize("permitAll()")
     public List<Product> getProductsById(@PathVariable int categoryId)
     {
-        // get a list of product by categoryId
-        return null;
+        return productDao.listByCategoryId(categoryId);
     }
 
     // add annotation to call this method for a POST action
     // add annotation to ensure that only an ADMIN can call this function
+    @PostMapping()
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public Category addCategory(@RequestBody Category category)
     {
-        // insert the category
-        return null;
+        categoryDao.create(category);
+        return category;
     }
 
     // add annotation to call this method for a PUT (update) action - the url path must include the categoryId
