@@ -74,20 +74,27 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
                 INSERT INTO videogamestore.categories (name, description)
                 VALUES (?, ?);""";
 
-        try (Connection connection = basicDataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
+        try (Connection connection = getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, category.getName());
             preparedStatement.setString(2, category.getDescription());
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            int rowsAffected = preparedStatement.executeUpdate();
 
+            if (rowsAffected > 0) {
+                ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+
+                if (generatedKeys.next()) {
+                    int categoryId = generatedKeys.getInt("category_id");
+
+                    return getById(1);
+                }
             }
         } catch (SQLException e) {
-            System.out.println("Error trying to create new category " +
+            System.out.println("Error creating new category " +
                     e.getMessage());
         }
-        return category;
+        return null;
     }
 
     @Override
