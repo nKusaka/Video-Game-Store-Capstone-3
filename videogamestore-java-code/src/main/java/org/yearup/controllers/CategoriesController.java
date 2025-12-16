@@ -84,7 +84,7 @@ public class CategoriesController
         try {
             return categoryDao.create(category);
         } catch(Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to create new category");
         }
     }
 
@@ -97,7 +97,7 @@ public class CategoriesController
         try {
             categoryDao.update(id, category);
         } catch(Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to update category");
         }
     }
 
@@ -111,7 +111,7 @@ public class CategoriesController
         try {
             categoryDao.delete(id);
         } catch(Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to delete category");
         }
     }
 }

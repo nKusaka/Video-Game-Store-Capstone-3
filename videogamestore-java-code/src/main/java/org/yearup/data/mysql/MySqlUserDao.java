@@ -20,7 +20,6 @@ public class MySqlUserDao extends MySqlDaoBase implements UserDao
         super(dataSource);
     }
 
-
     @Override
     public User create(User newUser)
     {
