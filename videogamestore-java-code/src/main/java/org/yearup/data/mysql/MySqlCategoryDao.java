@@ -16,11 +16,10 @@ import java.util.List;
 
 @Component
 public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
-    private final BasicDataSource basicDataSource;
+
 
     public MySqlCategoryDao(DataSource dataSource, BasicDataSource basicDataSource) {
         super(dataSource);
-        this.basicDataSource = basicDataSource;
     }
 
     @Override
@@ -29,7 +28,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
 
         String sql = "SELECT * FROM videogamestore.categories;";
 
-        try (Connection connection = basicDataSource.getConnection();
+        try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
@@ -49,7 +48,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
         String sql = "SELECT * FROM videogamestore.categories " +
                 "WHERE category_id = ?;";
 
-        try (Connection connection = basicDataSource.getConnection();
+        try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setInt(1, categoryId);

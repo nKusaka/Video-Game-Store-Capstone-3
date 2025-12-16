@@ -67,8 +67,7 @@ public class CategoriesController
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public Category addCategory(@RequestBody Category category)
     {
-        categoryDao.create(category);
-        return category;
+        return categoryDao.create(category);
     }
 
     // add annotation to call this method for a PUT (update) action - the url path must include the categoryId
