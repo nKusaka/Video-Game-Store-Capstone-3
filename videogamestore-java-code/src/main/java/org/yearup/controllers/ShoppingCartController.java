@@ -60,7 +60,7 @@ public class ShoppingCartController
     // add a POST method to add a product to the cart - the url should be
     // https://localhost:8080/cart/products/15 (15 is the productId to be added
     @PostMapping("products/{productId}")
-    public ShoppingCart updateProduct(@PathVariable int productId, Principal principal) {
+    public ShoppingCart addProductToShoppingCart(@PathVariable int productId, Principal principal) {
         try {
             String userName = principal.getName();
 
@@ -77,18 +77,33 @@ public class ShoppingCartController
     // https://localhost:8080/cart/products/15 (15 is the productId to be updated)
     // the BODY should be a ShoppingCartItem - quantity is the only value that will be updated
     @PutMapping("products/{productId}")
-    public ShoppingCart updateProduct(@PathVariable int productId, Principal principal) {
+    public ShoppingCart updateProductInShoppingCart(@PathVariable int productId, Principal principal) {
         try {
             String userName = principal.getName();
 
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
-            return shoppingCartDao.
+            return shoppingCartDao.updateProduct(userId, productId);
+        } catch(Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
+
     }
 
     // add a DELETE method to clear all products from the current users cart
     // https://localhost:8080/cart
+    @DeleteMapping("")
+    public ShoppingCart deleteShoppingCart(Principal principal) {
+        try {
+            String userName = principal.getName();
 
+            User user = userDao.getByUserName(userName);
+            int userId = user.getId();
+
+            return shoppingCartDao.deleteShoppingCart(userId);
+        } catch(Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+        }
+    }
 }
