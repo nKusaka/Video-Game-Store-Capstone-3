@@ -34,15 +34,10 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
-                Category category = new Category(
-                        resultSet.getInt("category_id"),
-                        resultSet.getString("name"),
-                        resultSet.getString("description")
-                );
-                categories.add(category);
+                categories.add(mapRow(resultSet));
             }
         } catch (SQLException e) {
-            System.out.println("Error fetching categories " +
+            System.out.println("Error fetching all categories " +
                     e.getMessage());
         }
         return categories;
@@ -59,13 +54,10 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
 
             preparedStatement.setInt(1, categoryId);
 
-
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
                 if (resultSet.next()) {
-                    category.setCategoryId(resultSet.getInt("category_id"));
-                    category.setName(resultSet.getString("name"));
-                    category.setDescription(resultSet.getString("description"));
+                    return mapRow(resultSet);
                 }
             }
 
@@ -73,7 +65,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
             System.out.println("Error fetching specific category id " +
                     e.getMessage());
         }
-        return category;
+        return null;
     }
 
     @Override
@@ -88,7 +80,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
             preparedStatement.setString(1, category.getName());
             preparedStatement.setString(2, category.getDescription());
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()){
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
             }
         } catch (SQLException e) {
