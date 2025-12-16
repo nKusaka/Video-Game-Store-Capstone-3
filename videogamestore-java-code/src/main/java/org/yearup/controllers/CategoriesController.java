@@ -3,8 +3,10 @@ package org.yearup.controllers;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.ibatis.annotations.Results;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.CategoryDao;
 import org.yearup.data.ProductDao;
 import org.yearup.models.Category;
@@ -41,7 +43,11 @@ public class CategoriesController
     @PreAuthorize("permitAll()")
     public List<Category> getAll()
     {
-        return categoryDao.getAllCategories();
+        try {
+            return categoryDao.getAllCategories();
+        } catch(Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+        }
     }
 
     // add the appropriate annotation for a get action
@@ -49,7 +55,11 @@ public class CategoriesController
     @PreAuthorize("permitAll()")
     public Category getById(@PathVariable int id)
     {
-        return categoryDao.getById(id);
+        try {
+            return categoryDao.getById(id);
+        } catch(Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+        }
     }
 
     // the url to return all products in category 1 would look like this
@@ -58,7 +68,11 @@ public class CategoriesController
     @PreAuthorize("permitAll()")
     public List<Product> getProductsById(@PathVariable int categoryId)
     {
-        return productDao.listByCategoryId(categoryId);
+        try {
+            return productDao.listByCategoryId(categoryId);
+        } catch(Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+        }
     }
 
     // add annotation to call this method for a POST action
@@ -67,14 +81,24 @@ public class CategoriesController
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public Category addCategory(@RequestBody Category category)
     {
-        return categoryDao.create(category);
+        try {
+            return categoryDao.create(category);
+        } catch(Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+        }
     }
 
     // add annotation to call this method for a PUT (update) action - the url path must include the categoryId
     // add annotation to ensure that only an ADMIN can call this function
+    @PutMapping("{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void updateCategory(@PathVariable int id, @RequestBody Category category)
     {
-        // update the category by id
+        try {
+            categoryDao.update(id, category);
+        } catch(Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+        }
     }
 
 
