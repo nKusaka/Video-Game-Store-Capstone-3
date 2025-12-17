@@ -10,6 +10,7 @@ import org.yearup.data.ShoppingCartDao;
 import org.yearup.data.UserDao;
 import org.yearup.models.Product;
 import org.yearup.models.ShoppingCart;
+import org.yearup.models.ShoppingCartItem;
 import org.yearup.models.User;
 
 import java.security.Principal;
@@ -77,14 +78,14 @@ public class ShoppingCartController
     // https://localhost:8080/cart/products/15 (15 is the productId to be updated)
     // the BODY should be a ShoppingCartItem - quantity is the only value that will be updated
     @PutMapping("products/{productId}")
-    public ShoppingCart updateProductInShoppingCart(@PathVariable int productId, Principal principal) {
+    public ShoppingCart updateProductInShoppingCart(@PathVariable int productId, Principal principal, @RequestBody ShoppingCartItem shoppingCartItem) {
         try {
             String userName = principal.getName();
 
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
-            return shoppingCartDao.updateProduct(userId, productId);
+            return shoppingCartDao.updateProduct(userId, productId, shoppingCartItem);
         } catch(Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
