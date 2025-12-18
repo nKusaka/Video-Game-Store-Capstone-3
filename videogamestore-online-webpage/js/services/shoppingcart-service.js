@@ -10,9 +10,9 @@ class ShoppingCartService {
     addToCart(productId)
     {
         const url = `${config.baseUrl}/cart/products/${productId}`;
-        // const headers = userService.getHeaders();
+        const headers = userService.getHeaders();
 
-        axios.post(url, {})// ,{headers})
+        axios.post(url, {}, {headers})
             .then(response => {
                 this.setCart(response.data)
 
@@ -104,42 +104,81 @@ class ShoppingCartService {
         });
     }
 
-    buildItem(item, parent)
-    {
-        let outerDiv = document.createElement("div");
-        outerDiv.classList.add("cart-item");
+    buildItem(item, parent) {
+    let outerDiv = document.createElement("div");
+    outerDiv.classList.add("cart-item");
 
-        let div = document.createElement("div");
-        outerDiv.appendChild(div);
-        let h4 = document.createElement("h4")
-        h4.innerText = item.product.name;
-        div.appendChild(h4);
+    // Product name
+    let div = document.createElement("div");
+    outerDiv.appendChild(div);
+    let h4 = document.createElement("h4");
+    h4.innerText = item.product.name;
+    div.appendChild(h4);
 
-        let photoDiv = document.createElement("div");
-        photoDiv.classList.add("photo")
-        let img = document.createElement("img");
-        img.src = `/images/products/${item.product.imageUrl}`
-        img.addEventListener("click", () => {
-            showImageDetailForm(item.product.name, img.src)
-        })
-        photoDiv.appendChild(img)
-        let priceH4 = document.createElement("h4");
-        priceH4.classList.add("price");
-        priceH4.innerText = `$${item.product.price}`;
-        photoDiv.appendChild(priceH4);
-        outerDiv.appendChild(photoDiv);
+    // Product image & price
+    let photoDiv = document.createElement("div");
+    photoDiv.classList.add("photo");
+    let img = document.createElement("img");
+    img.src = `/images/products/${item.product.imageUrl}`;
+    img.addEventListener("click", () => {
+        showImageDetailForm(item.product.name, img.src);
+    });
+    photoDiv.appendChild(img);
 
-        let descriptionDiv = document.createElement("div");
-        descriptionDiv.innerText = item.product.description;
-        outerDiv.appendChild(descriptionDiv);
+    let priceH4 = document.createElement("h4");
+    priceH4.classList.add("price");
+    priceH4.innerText = `$${item.product.price}`;
+    photoDiv.appendChild(priceH4);
+    outerDiv.appendChild(photoDiv);
 
-        let quantityDiv = document.createElement("div")
-        quantityDiv.innerText = `Quantity: ${item.quantity}`;
-        outerDiv.appendChild(quantityDiv)
+    // Product description
+    let descriptionDiv = document.createElement("div");
+    descriptionDiv.innerText = item.product.description;
+    outerDiv.appendChild(descriptionDiv);
 
+    // ===== Quantity control with plus/minus buttons =====
+    let quantityDiv = document.createElement("div");
 
-        parent.appendChild(outerDiv);
-    }
+    // Minus button
+    let minusButton = document.createElement("button");
+    minusButton.innerText = "-";
+    minusButton.classList.add("quantity-btn");
+
+    // Quantity display
+    let quantitySpan = document.createElement("span");
+    quantitySpan.innerText = item.quantity;
+    quantitySpan.style.margin = "0 10px";
+    quantitySpan.classList.add("quantity-display");
+
+    // Plus button
+    let plusButton = document.createElement("button");
+    plusButton.innerText = "+";
+    plusButton.classList.add("quantity-btn");
+
+    // Button click events using the class method
+    minusButton.addEventListener("click", () => {
+        let newQuantity = item.quantity - 1;
+        if (newQuantity < 0) newQuantity = 0;
+        item.quantity = newQuantity;
+        quantitySpan.innerText = newQuantity;
+        cartService.updateItemQuantity(item.product.productId, newQuantity);
+    });
+
+    plusButton.addEventListener("click", () => {
+        let newQuantity = item.quantity + 1;
+        item.quantity = newQuantity;
+        quantitySpan.innerText = newQuantity;
+        cartService.updateItemQuantity(item.product.productId, newQuantity);
+    });
+
+    // Append buttons and span
+    quantityDiv.appendChild(minusButton);
+    quantityDiv.appendChild(quantitySpan);
+    quantityDiv.appendChild(plusButton);
+
+    outerDiv.appendChild(quantityDiv);
+    parent.appendChild(outerDiv);
+}
 
     clearCart()
     {
@@ -184,6 +223,33 @@ class ShoppingCartService {
         catch (e) {
 
         }
+    }
+
+    updateItemQuantity(productId, newQuantity) {
+        const url = `${config.baseUrl}/cart/products/${productId}`;
+
+        const headers = userService.getHeaders();
+
+        const body = {
+            quantity: newQuantity
+        };
+
+        axios.put(url, body, {headers})
+             .then(response => {
+                 this.setCart(response.data)
+
+                 this.updateCartDisplay()
+                 this.loadCartPage()
+
+             })
+             .catch(error => {
+
+                 const data = {
+                     error: "Update cart quantity failed."
+                 };
+
+                 templateBuilder.append("error", data, "errors")
+             })
     }
 }
 
