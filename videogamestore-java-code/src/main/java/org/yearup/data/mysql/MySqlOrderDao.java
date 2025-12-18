@@ -68,24 +68,27 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
             System.out.println("Error trying to get your cart " +
                     e.getMessage());
         }
+
         Order order = new Order();
         sql = """
                 SELECT * FROM videogamestore.profiles
                 LEFT JOIN videogamestore.shopping_cart
-                ON profiles.user_id = shopping_cart.user_id;""";
+                ON profiles.user_id = shopping_cart.user_id
+                WHERE user_id = ?;""";
 
         try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
 
-            while (resultSet.next()) {
-                order.setUserId(userId);
-                order.setCity(resultSet.getString("city"));
-                order.setAddress(resultSet.getString("address"));
-                order.setDate(resultSet.getDate("date"));
-                order.setState(resultSet.getString("state"));
-                order.setZip(resultSet.getString("zip"));
-                order.setShippingAmount(shoppingCart.getTotal());
+                while (resultSet.next()) {
+                    order.setUserId(userId);
+                    order.setCity(resultSet.getString("city"));
+                    order.setAddress(resultSet.getString("address"));
+                    order.setState(resultSet.getString("state"));
+                    order.setZip(resultSet.getString("zip"));
+                    order.setShippingAmount(shoppingCart.getTotal());
+                }
             }
         } catch (SQLException e) {
             System.out.println("Error trying to complete your order " +
@@ -109,13 +112,19 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            System.out.println("Error trying to connect orders to data base " +
+            System.out.println("Error trying to connect orders to database " +
                     e.getMessage());
         }
 
+        sql = """
+                SELECT * FROM videogamestore.orders
+                WHERE user_id = ?;""";
+
         try (Connection connection = getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, userId);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
                 order.setOrderId(resultSet.getInt("order_id"));
@@ -143,11 +152,13 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
                 orderLineItem.setSalesPrice(shoppingCart.getItems().get(hashMapKey).getLineTotal());
                 productQuantities.replace(shoppingCart.getItems().get(hashMapKey).getProductId(), 1, shoppingCart.getItems().get(hashMapKey).getQuantity());
                 productPrices.replace(shoppingCart.getItems().get(hashMapKey).getProductId(), BigDecimal.ZERO, shoppingCart.getItems().get(hashMapKey).getLineTotal().divide(BigDecimal.valueOf(shoppingCart.getItems().get(hashMapKey).getQuantity())));
+
                 sql = """
                         INSERT INTO videogamestore.order_line_items(order_id, product_id, sales_price, quantity, discount)
-                        VALUES (?, ?, ?, ?, ?;""";
+                        VALUES (?, ?, ?, ?, ?);""";
+
                 try (Connection connection1 = getConnection();
-                PreparedStatement preparedStatement1 = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                     PreparedStatement preparedStatement1 = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
                     preparedStatement1.setInt(1, order.getOrderId());
                     preparedStatement.setInt(2, shoppingCart.getItems().get(hashMapKey).getProductId());
                     preparedStatement.setBigDecimal(3, productPrices.get(shoppingCart.getItems().get(hashMapKey).getProductId()));

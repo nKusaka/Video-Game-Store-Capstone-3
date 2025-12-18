@@ -16,7 +16,7 @@ public class Order {
     private BigDecimal shippingAmount;
 
     public Order() {
-
+        this.date = Date.valueOf(LocalDate.now());
     }
 
     public Order(int orderId, int userId, String address, String city, String state, String zip, BigDecimal shippingAmount) {
