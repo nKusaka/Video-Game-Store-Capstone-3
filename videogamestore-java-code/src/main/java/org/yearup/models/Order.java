@@ -19,10 +19,10 @@ public class Order {
         this.date = Date.valueOf(LocalDate.now());
     }
 
-    public Order(int orderId, int userId, String address, String city, String state, String zip, BigDecimal shippingAmount) {
+    public Order(int orderId, int userId, Date date, String address, String city, String state, String zip, BigDecimal shippingAmount) {
         this.orderId = orderId;
         this.userId = userId;
-        this.date = Date.valueOf(LocalDate.now());
+        this.date = date;
         this.address = address;
         this.city = city;
         this.state = state;
