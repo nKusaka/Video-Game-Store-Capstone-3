@@ -10,6 +10,10 @@ public class OrderLineItem {
     private int quantity;
     private BigDecimal discount;
 
+    public OrderLineItem() {
+
+    }
+
     public OrderLineItem(int orderLineItemId, int orderId, int productId, BigDecimal salesPrice, int quantity, BigDecimal discount) {
         this.orderLineItemId = orderLineItemId;
         this.orderId = orderId;
@@ -21,10 +25,6 @@ public class OrderLineItem {
 
     public int getOrderLineItemId() {
         return orderLineItemId;
-    }
-
-    public void setOrderLineItemId(int orderLineItemId) {
-        this.orderLineItemId = orderLineItemId;
     }
 
     public int getOrderId() {
