@@ -83,9 +83,9 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
                 ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
 
                 if (generatedKeys.next()) {
-                    int categoryId = generatedKeys.getInt("category_id");
+                    int categoryId = generatedKeys.getInt(1);
 
-                    return getById(1);
+                    return getById(categoryId);
                 }
             }
         } catch (SQLException e) {
