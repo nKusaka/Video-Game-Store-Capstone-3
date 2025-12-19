@@ -147,18 +147,15 @@ class ProductService {
   }
 
   enableButtons() {
-    const buttons = [...document.querySelectorAll(".add-button")];
+  // target ONLY the actual buttons inside the add-button containers
+  const addToCartButtons = [...document.querySelectorAll(".add-button button")];
 
-    if (userService.isLoggedIn()) {
-      buttons.forEach((button) => {
-        button.classList.remove("invisible");
-      });
-    } else {
-      buttons.forEach((button) => {
-        button.classList.add("invisible");
-      });
-    }
+  if (userService.isLoggedIn()) {
+    addToCartButtons.forEach((btn) => btn.classList.remove("invisible"));
+  } else {
+    addToCartButtons.forEach((btn) => btn.classList.add("invisible"));
   }
+}
 }
 
 document.addEventListener("DOMContentLoaded", () => {
