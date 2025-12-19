@@ -52,7 +52,10 @@ function showImageDetailForm(product, imageUrl) {
 
 function loadHome() {
   templateBuilder.build("home", {}, "main");
-
+  
+  productService.addMinPriceFilter("0");
+  productService.addMaxPriceFilter("200");
+  
   productService.search();
   categoryService.getAllCategories(loadCategories);
 }
@@ -117,7 +120,7 @@ function onPriceSliderChange() {
 
   
 
-  // console.log('Slider change - Min:', min, 'Max:', max);
+  console.log('Slider change - Min:', min, 'Max:', max);
 
   
   if (min > max) {
@@ -138,14 +141,14 @@ function onPriceSliderChange() {
     sliderTrack.style.right = (100 - maxPercent) + "%";
   }
 
+  // Apply filter - handle edge cases for 0 and 200
   const minValue = (min === 0) ? 0 : min;
   const maxValue = (max === 200) ? 200 : max;
 
+  console.log('Applying filters - Min:', minValue, 'Max:', maxValue);
   
   productService.addMinPriceFilter(minValue.toString());
   productService.addMaxPriceFilter(maxValue.toString());
-
-
   productService.search();
 }
 

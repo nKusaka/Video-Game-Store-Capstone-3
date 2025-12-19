@@ -49,8 +49,9 @@ public class OrdersController {
         }
         Order order = orderDao.createOrder(userId, profile, shoppingCart);
 
-        for (Map.Entry<Integer, ShoppingCartItem> shoppingCartItem: shoppingCart.getItems().entrySet()) {
-            orderLineItemDao.create(shoppingCartItem.getKey(), order.getOrderId(), shoppingCartItem.getValue());
+        for (ShoppingCartItem item : shoppingCart.getItems().values()) {
+            int productId = item.getProduct().getProductId();
+            orderLineItemDao.create(productId, order.getOrderId(), item);
         }
         shoppingCartDao.deleteShoppingCart(userId);
         return order;
