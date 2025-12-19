@@ -99,25 +99,50 @@ function setSubcategory(control) {
     productService.search();
 }
 
-function setMinPrice(control) {
-    // const slider = document.getElementById("min-price");
-    const label = document.getElementById("min-price-display");
-    label.innerText = control.value;
+function setMinPrice(slider) {
+  if (!productService) return;
 
-    const value = control.value != 0 ? control.value : "";
-    productService.addMinPriceFilter(value);
-    productService.search();
+  const minSlider = document.getElementById("min-price");
+  const maxSlider = document.getElementById("max-price");
+
+  let min = Number(slider.value);
+  let max = Number(maxSlider.value);
+
+  // keep min <= max
+  if (min > max) {
+    min = max;
+    minSlider.value = String(min);
+  }
+
+  document.getElementById("min-price-display").textContent = String(min);
+
+  // treat 0 as "no filter"
+  productService.addMinPriceFilter(min === 0 ? "" : String(min));
+  productService.search();
 }
 
-function setMaxPrice(control) {
-    // const slider = document.getElementById("min-price");
-    const label = document.getElementById("max-price-display");
-    label.innerText = control.value;
+function setMaxPrice(slider) {
+  if (!productService) return;
 
-    const value = control.value != 200 ? control.value : "";
-    productService.addMaxPriceFilter(value);
-    productService.search();
+  const minSlider = document.getElementById("min-price");
+  const maxSlider = document.getElementById("max-price");
+
+  let max = Number(slider.value);
+  let min = Number(minSlider.value);
+
+  // keep max >= min
+  if (max < min) {
+    max = min;
+    maxSlider.value = String(max);
+  }
+
+  document.getElementById("max-price-display").textContent = String(max);
+
+  // treat 200 as "no filter"
+  productService.addMaxPriceFilter(max === 200 ? "" : String(max));
+  productService.search();
 }
+
 
 function closeError(control) {
     setTimeout(() => {

@@ -16,9 +16,15 @@
           <input type="password" class="form-control" id="password" placeholder="password">
           <label for="password">Password</label>
         </div>
-      </div>
-      <div class="register">
-        <button type="button" onclick="showRegisterForm()">Register</button>
+        <button class="register" type="button" onclick="showRegisterForm()">
+        <span class="button-decor"></span>
+        <span class="button-content">
+            <span class="button__icon">
+                <i class="fa-solid fa-user-plus"></i>
+            </span>
+            <span class="button__text">Register</span>
+        </span>
+      </button>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="hideModalForm()">Cancel</button>
