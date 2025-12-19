@@ -22,7 +22,7 @@
 * Unique User Cart Screen
 * Checkout Screen - not added
 
-### Screenshots Of Code
+### Screenshots Of Website
 * Home Screen
 <img width="720" height="480" alt="image" src="https://github.com/user-attachments/assets/884d63de-b2da-4692-b07e-62911678f656" />
 
