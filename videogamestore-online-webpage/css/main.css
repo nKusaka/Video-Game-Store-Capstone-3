@@ -10,15 +10,7 @@ body {
     color: #333;
 }
 
-h4 {
-    text-align: center;
-    padding: 10px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-}
+
 
 header {
     display: flex;
@@ -140,6 +132,96 @@ main>.filter-box {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
+/* =====================
+   PRICE SLIDER (FILTER SIDEBAR)
+===================== */
+
+.slider-card {
+    margin-top: 20px;
+    padding: 10px 5px;
+    border-top: 1px solid #ccc;
+}
+
+.slider-card h5 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.price-content {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.price-content label {
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.price-content p {
+    margin: 0;
+    font-weight: 600;
+}
+
+.range-slider {
+    position: relative;
+    height: 30px;
+}
+
+.range-slider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: #ddd;
+    border-radius: 5px;
+    transform: translateY(-50%);
+}
+
+.slider-track {
+    position: absolute;
+    top: 30%;
+    height: 6px;
+    background: #00ff41;
+    border-radius: 5px;
+    transform: translateY(-50%);
+    left: 0;
+    right: 0;
+    z-index: 0;
+}
+
+.range-slider input {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    pointer-events: none;
+    background: none;
+    appearance: none;
+    z-index: 2;
+}
+
+.range-slider input::-webkit-slider-thumb {
+    pointer-events: auto;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #000;
+    cursor: pointer;
+}
+
+.range-slider input::-moz-range-thumb {
+    pointer-events: auto;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #000;
+    cursor: pointer;
+}
+
 
 main #min-price .slider-selection {
     background: #BABABA;

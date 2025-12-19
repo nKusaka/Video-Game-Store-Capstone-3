@@ -44,6 +44,9 @@ public class OrdersController {
         if (shoppingCart.getItems().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        if (profileDao.getByUserId(userId).getAddress().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
         Order order = orderDao.createOrder(userId, profile, shoppingCart);
 
         for (Map.Entry<Integer, ShoppingCartItem> shoppingCartItem: shoppingCart.getItems().entrySet()) {

@@ -97,17 +97,14 @@ class ShoppingCartService {
         button.addEventListener("click", () => this.clearCart());
         cartHeader.appendChild(button)
 
-        // Checkout button
         const checkoutBtn = document.createElement("button");
-        checkoutBtn.classList.add("btn");
-        checkoutBtn.classList.add("btn-success");
+        checkoutBtn.classList.add("btn", "btn-success");
         checkoutBtn.innerText = "Checkout";
-
+        checkoutBtn.disabled = this.cart.items.length === 0;
         checkoutBtn.addEventListener("click", () => this.checkout());
-
         cartHeader.appendChild(checkoutBtn);
 
-        contentDiv.appendChild(cartHeader)
+        contentDiv.appendChild(cartHeader);
         main.appendChild(contentDiv);
 
         // let parent = document.getElementById("cart-item-list");
@@ -116,32 +113,6 @@ class ShoppingCartService {
         });
     }
 
-    checkout() {
-        // If cart is empty, don't allow checkout
-        if (!this.cart.items || this.cart.items.length === 0) {
-            templateBuilder.append("error", { error: "Your cart is empty." }, "errors");
-            return;
-        }
-
-        // If you have an orders endpoint, call it here.
-        // Common patterns:
-        // POST /orders  OR  POST /checkout  OR  POST /cart/checkout
-        const url = `${config.baseUrl}/checkout`; // change if your backend uses a different route
-        const headers = userService.getHeaders();
-
-        axios.post(url, {}, { headers })
-            .then(response => {
-                // Success message (optional)
-                templateBuilder.append("message", { message: "Order placed successfully!" }, "main");
-
-                // Clear cart UI (or reload cart from backend)
-                this.loadCart();
-                this.loadCartPage();
-            })
-            .catch(error => {
-                templateBuilder.append("error", { error: "Checkout failed." }, "errors");
-            });
-    }
     buildItem(item, parent) {
         let outerDiv = document.createElement("div");
         outerDiv.classList.add("cart-item");
@@ -287,9 +258,93 @@ class ShoppingCartService {
                 templateBuilder.append("error", data, "errors")
             })
     }
+
+    checkout() {
+        if (this.cart.items.length === 0) {
+            templateBuilder.append("error", { error: "Your cart is empty." }, "errors");
+            return;
+        }
+
+        const ok = confirm(`Confirm your order?\n\nTotal: $${this.cart.total.toFixed(2)}`);
+        if (!ok) return;
+
+        const url = `${config.baseUrl}/checkout`;
+        const headers = userService.getHeaders();
+
+        axios.post(url, {}, { headers })
+            .then(response => {
+                const order = response.data;
+
+                // since backend clears the cart, refresh our local cart from /cart
+                this.loadCart();
+
+                // show confirmation UI
+                this.loadOrderConfirmationPage(order);
+            })
+            .catch(error => {
+                const msg =
+                    error?.response?.data?.message ||
+                    error?.response?.data ||
+                    "Checkout failed.";
+
+                templateBuilder.append("error", { error: msg }, "errors");
+                if (msg.toLowerCase().includes("complete your profile")) {
+                    if (confirm("You need to complete your profile before checkout. Go there now?")) {
+                        profileService.loadProfile(); 
+                    }
+                }
+
+            });
+    }
+
+    loadOrderConfirmationPage(order) {
+        const main = document.getElementById("main");
+        main.innerHTML = "";
+
+        const wrap = document.createElement("div");
+        wrap.classList.add("content-form");
+
+        const h1 = document.createElement("h1");
+        h1.innerText = "Order Confirmed!";
+        wrap.appendChild(h1);
+
+        const orderIdP = document.createElement("p");
+        orderIdP.innerText = `Order #: ${order.orderId}`;
+        wrap.appendChild(orderIdP);
+
+        const dateP = document.createElement("p");
+        dateP.innerText = `Date: ${order.date}`;
+        wrap.appendChild(dateP);
+
+        const shipTo = document.createElement("p");
+        shipTo.innerText =
+            `Shipping to: ${order.address}, ${order.city}, ${order.state} ${order.zip}`;
+        wrap.appendChild(shipTo);
+
+        const shippingP = document.createElement("p");
+        shippingP.innerText = `Shipping: $${Number(order.shippingAmount ?? 0).toFixed(2)}`;
+        wrap.appendChild(shippingP);
+
+        const totalP = document.createElement("h3");
+        totalP.innerText = `Order total: $${this.cart.total.toFixed(2)}`;
+        // Note: your Order model doesn't include the cart total; if you want exact total here,
+        // add total to the Order response OR calculate it on backend and return it.
+        wrap.appendChild(totalP);
+
+        const backBtn = document.createElement("button");
+        backBtn.classList.add("btn", "btn-primary");
+        backBtn.innerText = "Continue shopping";
+        backBtn.addEventListener("click", () => productService.loadProductsPage());
+        wrap.appendChild(backBtn);
+
+        main.appendChild(wrap);
+    }
 }
 
-
+function showCart() {
+    cartService.loadCart();
+    cartService.loadCartPage();
+}
 
 
 

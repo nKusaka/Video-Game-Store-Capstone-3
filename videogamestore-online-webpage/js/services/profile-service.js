@@ -5,6 +5,7 @@ class ProfileService
     loadProfile()
     {
         const url = `${config.baseUrl}/profile`;
+        const headers = userService.getHeaders();
 
         axios.get(url)
              .then(response => {
@@ -23,7 +24,8 @@ class ProfileService
     {
 
         const url = `${config.baseUrl}/profile`;
-
+        const headers = userService.getHeaders(); 
+        
         axios.put(url, profile)
              .then(() => {
                  const data = {
