@@ -1,6 +1,6 @@
 # Video Game Store
 
-#### Front End Code Contributors 
+#### Contributors
 * https://github.com/Apicad
 * https://github.com/jasminetntu
 
