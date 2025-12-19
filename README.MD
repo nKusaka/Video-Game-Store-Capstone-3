@@ -24,7 +24,7 @@
 
 ### Screenshots Of Website
 * Home Screen
-<img width="720" height="480" alt="image" src="https://github.com/user-attachments/assets/884d63de-b2da-4692-b07e-62911678f656" />
+<img width="720" height="480" alt="image" src="https://github.com/user-attachments/assets/e852b1e9-9a8b-4d4d-a0dd-99172b7b4dc1" />
 
 
 * Profile Screen
@@ -32,11 +32,11 @@
 
 
 * User Cart Screen
-<img width="720" height="480" alt="image" src="https://github.com/user-attachments/assets/8c150e29-f9ac-446b-a611-3e9920912d65" />
+<img width="720" height="480" alt="image" src="https://github.com/user-attachments/assets/e0a96cd3-df05-4f8f-9acb-c386885dddf4" />
 
 
 * Checkout Confirmation
-<img width="720" height="480" alt="image" src="https://github.com/user-attachments/assets/28f9b6d0-4669-4342-942d-8e6663b2035f" />
+<img width="720" height="480" alt="image" src="https://github.com/user-attachments/assets/e9c3570c-dca3-47c1-8ad8-fb9169a14ac9" />
 
 
 * Login Menu
