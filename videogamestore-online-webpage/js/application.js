@@ -1,161 +1,167 @@
 function showLoginForm() {
-    templateBuilder.build("login-form", {}, "login");
+  templateBuilder.build("login-form", {}, "login");
 }
 
 function hideModalForm() {
-    templateBuilder.clear("login");
+  templateBuilder.clear("login");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    templateBuilder = new TemplateBuilder();
-    loadHome();
+  templateBuilder = new TemplateBuilder();
+  loadHome();
 });
 
 function register() {
-    const username = document.getElementById("register-username").value;
-    const password = document.getElementById("register-password").value;
-    const confirm = document.getElementById("register-confirm").value;
+  const username = document.getElementById("register-username").value;
+  const password = document.getElementById("register-password").value;
+  const confirm = document.getElementById("register-confirm").value;
+  let checkUser = false
 
-    if (confirm === password) {
-        console.log('this worked')
-        userService.register(username, password, confirm);
-        hideModalForm();
-    }
-     if (confirm !== password) {
-        alert('password does not match!');
-        return;
-    }
+  if (password === confirm) {
+    alert('user was created')
+    userService.register(username, password, confirm);
+    checkUser = true;
+  }
+
+  if (checkUser) {
+    hideModalForm();
+  }
+
+  if (!checkUser) {
+    alert('password do not match')
+  }
 
 }
 
 function login() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
 
-    userService.login(username, password);
-    hideModalForm();
+  userService.login(username, password);
+  hideModalForm();
 }
 
 function showImageDetailForm(product, imageUrl) {
-    const imageDetail = {
-        name: product,
-        imageUrl: imageUrl,
-    };
+  const imageDetail = {
+    name: product,
+    imageUrl: imageUrl,
+  };
 
-    templateBuilder.build("image-detail", imageDetail, "login");
+  templateBuilder.build("image-detail", imageDetail, "login");
 }
 
 function loadHome() {
-    templateBuilder.build("home", {}, "main");
-
-    productService.search();
-    categoryService.getAllCategories(loadCategories);
+  templateBuilder.build("home", {}, "main");
+  
+  productService.addMinPriceFilter("0");
+  productService.addMaxPriceFilter("200");
+  
+  productService.search();
+  categoryService.getAllCategories(loadCategories);
 }
 
 function editProfile() {
-    profileService.loadProfile();
+  profileService.loadProfile();
 }
 
 function saveProfile() {
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
-    const phone = document.getElementById("phone").value;
-    const email = document.getElementById("email").value;
-    const address = document.getElementById("address").value;
-    const city = document.getElementById("city").value;
-    const state = document.getElementById("state").value;
-    const zip = document.getElementById("zip").value;
+  const firstName = document.getElementById("firstName").value;
+  const lastName = document.getElementById("lastName").value;
+  const phone = document.getElementById("phone").value;
+  const email = document.getElementById("email").value;
+  const address = document.getElementById("address").value;
+  const city = document.getElementById("city").value;
+  const state = document.getElementById("state").value;
+  const zip = document.getElementById("zip").value;
 
-    const profile = {
-        firstName,
-        lastName,
-        phone,
-        email,
-        address,
-        city,
-        state,
-        zip,
-    };
+  const profile = {
+    firstName,
+    lastName,
+    phone,
+    email,
+    address,
+    city,
+    state,
+    zip,
+  };
 
-    profileService.updateProfile(profile);
+  profileService.updateProfile(profile);
 }
 
 function showCart() {
-    cartService.loadCartPage();
+  cartService.loadCartPage();
 }
 
 function clearCart() {
-    cartService.clearCart();
-    cartService.loadCartPage();
+  cartService.clearCart();
+  cartService.loadCartPage();
 }
 
 function setCategory(control) {
-    productService.addCategoryFilter(control.value);
-    productService.search();
+  productService.addCategoryFilter(control.value);
+  productService.search();
 }
 
 function setSubcategory(control) {
-    productService.addSubcategoryFilter(control.value);
-    productService.search();
+  productService.addSubcategoryFilter(control.value);
+  productService.search();
 }
 
-function setMinPrice(slider) {
-  if (!productService) return;
+function onPriceSliderChange() {
+  const minSlider = document.getElementById('min-price');
+  const maxSlider = document.getElementById('max-price');
 
-  const minSlider = document.getElementById("min-price");
-  const maxSlider = document.getElementById("max-price");
+  const minDisplay = document.getElementById('min-price-display');
+  const maxDisplay = document.getElementById('max-price-display');
+  const sliderTrack = document.querySelector('.slider-track');
 
-  let min = Number(slider.value);
-  let max = Number(maxSlider.value);
+  let min = parseInt(minSlider.value);
+  let max = parseInt(maxSlider.value);
 
-  // keep min <= max
+  
+
+  console.log('Slider change - Min:', min, 'Max:', max);
+
+  
   if (min > max) {
+    minSlider.value = max;
     min = max;
-    minSlider.value = String(min);
   }
 
-  document.getElementById("min-price-display").textContent = String(min);
+  
+  minDisplay.textContent = `$${min}`;
+  maxDisplay.textContent = `$${max}`;
 
-  // treat 0 as "no filter"
-  productService.addMinPriceFilter(min === 0 ? "" : String(min));
-  productService.search();
-}
 
-function setMaxPrice(slider) {
-  if (!productService) return;
-
-  const minSlider = document.getElementById("min-price");
-  const maxSlider = document.getElementById("max-price");
-
-  let max = Number(slider.value);
-  let min = Number(minSlider.value);
-
-  // keep max >= min
-  if (max < min) {
-    max = min;
-    maxSlider.value = String(max);
+  
+  if (sliderTrack) {
+    const minPercent = (min / 200) * 100;
+    const maxPercent = (max / 200) * 100;
+    sliderTrack.style.left = minPercent + "%";
+    sliderTrack.style.right = (100 - maxPercent) + "%";
   }
 
-  document.getElementById("max-price-display").textContent = String(max);
+  // Apply filter - handle edge cases for 0 and 200
+  const minValue = (min === 0) ? 0 : min;
+  const maxValue = (max === 200) ? 200 : max;
 
-  // treat 200 as "no filter"
-  productService.addMaxPriceFilter(max === 200 ? "" : String(max));
+  console.log('Applying filters - Min:', minValue, 'Max:', maxValue);
+  
+  productService.addMinPriceFilter(minValue.toString());
+  productService.addMaxPriceFilter(maxValue.toString());
   productService.search();
 }
-
 
 function closeError(control) {
-    setTimeout(() => {
-        control.click();
-    }, 3000);
+  setTimeout(() => {
+    control.click();
+  }, 3000);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadHome();
+  loadHome();
 });
 
 function showRegisterForm() {
-    templateBuilder.build("register-form", {}, "login");
+  templateBuilder.build("register-form", {}, "login");
 }
-
-

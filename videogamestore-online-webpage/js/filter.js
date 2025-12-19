@@ -13,5 +13,6 @@ function loadCategories(categories)
     })
 }
 
+
 document.addEventListener('DOMContentLoaded', () => {
 })

@@ -5,30 +5,29 @@ class ProductService {
 
   filter = {
     cat: undefined,
-    minPrice: undefined,
-    maxPrice: undefined,
+    minPrice: 0,
+    maxPrice: 200,
     subCategory: undefined,
     queryString: () => {
       let qs = "";
       if (this.filter.cat) {
         qs = `cat=${this.filter.cat}`;
       }
-      if (this.filter.minPrice) {
-        const minP = `minPrice=${this.filter.minPrice}`;
-        if (qs.length > 0) {
-          qs += `&${minP}`;
-        } else {
-          qs = minP;
-        }
+      // Always include minPrice and maxPrice (they default to 0 and 200)
+      const minP = `minPrice=${this.filter.minPrice}`;
+      if (qs.length > 0) {
+        qs += `&${minP}`;
+      } else {
+        qs = minP;
       }
-      if (this.filter.maxPrice) {
-        const maxP = `maxPrice=${this.filter.maxPrice}`;
-        if (qs.length > 0) {
-          qs += `&${maxP}`;
-        } else {
-          qs = maxP;
-        }
+      
+      const maxP = `maxPrice=${this.filter.maxPrice}`;
+      if (qs.length > 0) {
+        qs += `&${maxP}`;
+      } else {
+        qs = maxP;
       }
+      
       if (this.filter.subCategory) {
         const sub = `subCategory=${this.filter.subCategory}`;
         if (qs.length > 0) {
@@ -59,12 +58,30 @@ class ProductService {
   }
 
   addMinPriceFilter(price) {
-    if (price == "" || !price) this.clearMinPriceFilter();
-    else this.filter.minPrice = price;
+    console.log('Setting minPrice:', price, 'Type:', typeof price);
+    const numPrice = parseInt(price);
+    
+    if (isNaN(numPrice) || price === "" || price === null || price === undefined) {
+      this.clearMinPriceFilter();
+    } else {
+      
+      this.filter.minPrice = numPrice;
+    }
+    console.log('MinPrice after set:', this.filter.minPrice);
   }
+  
   addMaxPriceFilter(price) {
-    if (price == "" || !price) this.clearMaxPriceFilter();
-    else this.filter.maxPrice = price;
+    console.log('Setting maxPrice:', price, 'Type:', typeof price);
+    const numPrice = parseInt(price);
+    
+    // Only clear if NaN, empty, or explicitly null/undefined
+    if (isNaN(numPrice) || price === "" || price === null || price === undefined) {
+      this.clearMaxPriceFilter();
+    } else {
+      // Store as number
+      this.filter.maxPrice = numPrice;
+    }
+    console.log('MaxPrice after set:', this.filter.maxPrice);
   }
   addSubcategoryFilter(subCategory) {
     if (subCategory == "") this.clearSubcategoryFilter();
@@ -85,13 +102,30 @@ class ProductService {
   }
 
   search() {
-    const url = `${config.baseUrl}/products${this.filter.queryString()}`;
+    const queryString = this.filter.queryString();
+    const url = `${config.baseUrl}/products${queryString}`;
+    
+    console.log('=== SEARCH CALLED ===');
+    console.log('Filter state:', {
+      minPrice: this.filter.minPrice,
+      maxPrice: this.filter.maxPrice,
+      subCategory: this.filter.subCategory,
+      cat: this.filter.cat
+    });
+    console.log('Query String:', queryString);
+    console.log('Search URL:', url);
 
     axios
       .get(url)
       .then((response) => {
         let data = {};
         data.products = response.data;
+        
+        console.log('✅ Products received:', data.products.length);
+        
+        if (data.products.length === 0) {
+          console.warn('⚠️ No products match the current filters!');
+        }
 
         data.products.forEach((product) => {
           if (!this.hasPhoto(product.imageUrl)) {
@@ -102,6 +136,8 @@ class ProductService {
         templateBuilder.build("product", data, "content", this.enableButtons);
       })
       .catch((error) => {
+        console.error('❌ Search error:', error);
+        console.error('Error details:', error.response || error.message);
         const data = {
           error: "Searching products failed.",
         };

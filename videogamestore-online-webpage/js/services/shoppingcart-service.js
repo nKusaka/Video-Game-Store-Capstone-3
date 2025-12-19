@@ -97,17 +97,14 @@ class ShoppingCartService {
         button.addEventListener("click", () => this.clearCart());
         cartHeader.appendChild(button)
 
-        // Checkout button
         const checkoutBtn = document.createElement("button");
-        checkoutBtn.classList.add("btn");
-        checkoutBtn.classList.add("btn-success");
+        checkoutBtn.classList.add("btn", "btn-success");
         checkoutBtn.innerText = "Checkout";
-
+        checkoutBtn.disabled = this.cart.items.length === 0;
         checkoutBtn.addEventListener("click", () => this.checkout());
-
         cartHeader.appendChild(checkoutBtn);
 
-        contentDiv.appendChild(cartHeader)
+        contentDiv.appendChild(cartHeader);
         main.appendChild(contentDiv);
 
         // let parent = document.getElementById("cart-item-list");
@@ -116,32 +113,6 @@ class ShoppingCartService {
         });
     }
 
-    checkout() {
-        // If cart is empty, don't allow checkout
-        if (!this.cart.items || this.cart.items.length === 0) {
-            templateBuilder.append("error", { error: "Your cart is empty." }, "errors");
-            return;
-        }
-
-        // If you have an orders endpoint, call it here.
-        // Common patterns:
-        // POST /orders  OR  POST /checkout  OR  POST /cart/checkout
-        const url = `${config.baseUrl}/checkout`; // change if your backend uses a different route
-        const headers = userService.getHeaders();
-
-        axios.post(url, {}, { headers })
-            .then(response => {
-                // Success message (optional)
-                templateBuilder.append("message", { message: "Order placed successfully!" }, "main");
-
-                // Clear cart UI (or reload cart from backend)
-                this.loadCart();
-                this.loadCartPage();
-            })
-            .catch(error => {
-                templateBuilder.append("error", { error: "Checkout failed." }, "errors");
-            });
-    }
     buildItem(item, parent) {
         let outerDiv = document.createElement("div");
         outerDiv.classList.add("cart-item");
@@ -287,9 +258,191 @@ class ShoppingCartService {
                 templateBuilder.append("error", data, "errors")
             })
     }
+
+    async checkout() {
+    if (this.cart.items.length === 0) {
+        templateBuilder.append("error", { error: "Your cart is empty." }, "errors");
+        return;
+    }
+
+    // ---- profile pre-check ----
+    try {
+        const profileUrl = `${config.baseUrl}/profile`;
+        const headers = userService.getHeaders();
+
+        const profileRes = await axios.get(profileUrl, { headers });
+        const p = profileRes.data;
+
+        const missing =
+            !p ||
+            !p.address?.trim() ||
+            !p.city?.trim() ||
+            !p.state?.trim() ||
+            !p.zip?.trim();
+
+        if (missing) {
+            templateBuilder.append(
+                "error",
+                { error: "Please complete your profile (address, city, state, zip) before checking out." },
+                "errors"
+            );
+
+            if (confirm("You need to complete your profile before checkout. Go there now?")) {
+                profileService.loadProfile();
+            }
+            return; // stop checkout
+        }
+
+    } catch (error) {
+        // couldn't load profile (not logged in, 401/403, etc.)
+        templateBuilder.append("error", { error: "Unable to verify profile. Please log in and try again." }, "errors");
+        return;
+    }
+
+    // ---- confirm + checkout ----
+    const ok = confirm(`Confirm your order?\n\nTotal: $${this.cart.total.toFixed(2)}`);
+    if (!ok) return;
+
+    const url = `${config.baseUrl}/checkout`;
+    const headers = userService.getHeaders();
+
+    axios.post(url, {}, { headers })
+        .then(response => {
+            const order = response.data;
+
+            // clear locally immediately (optional but nice)
+            this.cart = { items: [], total: 0 };
+            this.updateCartDisplay();
+
+            this.loadOrderConfirmationPage(order);
+            this.loadCart(); // refresh from server
+        })
+        .catch(error => {
+            const msg =
+                error?.response?.data?.message ||
+                error?.response?.data ||
+                "Checkout failed.";
+
+            templateBuilder.append("error", { error: msg }, "errors");
+
+            if (String(msg).toLowerCase().includes("complete your profile")) {
+                if (confirm("You need to complete your profile before checkout. Go there now?")) {
+                    profileService.loadProfile();
+                }
+            }
+        });
 }
 
+    loadOrderConfirmationPage(order) {
+        const main = document.getElementById("main");
+        main.innerHTML = "";
 
+        const wrap = document.createElement("div");
+        wrap.classList.add("order-confirmation");
+
+        // Success header with icon
+        const header = document.createElement("div");
+        header.classList.add("confirmation-header");
+        
+        const successIcon = document.createElement("div");
+        successIcon.classList.add("success-icon");
+        successIcon.innerHTML = "✓";
+        header.appendChild(successIcon);
+
+        const h1 = document.createElement("h1");
+        h1.innerText = "Order Confirmed!";
+        header.appendChild(h1);
+        
+        const thankYou = document.createElement("p");
+        thankYou.classList.add("thank-you-msg");
+        thankYou.innerText = "Thank you for your purchase!";
+        header.appendChild(thankYou);
+        
+        wrap.appendChild(header);
+
+        // Order details section
+        const detailsSection = document.createElement("div");
+        detailsSection.classList.add("order-details");
+        
+        const orderIdP = document.createElement("p");
+        orderIdP.innerHTML = `<strong>Order #:</strong> ${order.orderId}`;
+        detailsSection.appendChild(orderIdP);
+
+        const dateP = document.createElement("p");
+        dateP.innerHTML = `<strong>Date:</strong> ${order.date}`;
+        detailsSection.appendChild(dateP);
+
+        const shipTo = document.createElement("p");
+        shipTo.innerHTML =
+            `<strong>Shipping to:</strong> ${order.address}, ${order.city}, ${order.state} ${order.zip}`;
+        detailsSection.appendChild(shipTo);
+        
+        wrap.appendChild(detailsSection);
+
+        // Items ordered section
+        if (order.orderLineItems && order.orderLineItems.length > 0) {
+            const itemsSection = document.createElement("div");
+            itemsSection.classList.add("order-items-section");
+            
+            const itemsTitle = document.createElement("h3");
+            itemsTitle.innerText = "Items Ordered:";
+            itemsSection.appendChild(itemsTitle);
+            
+            const itemsList = document.createElement("div");
+            itemsList.classList.add("order-items-list");
+            
+            order.orderLineItems.forEach(item => {
+                const itemDiv = document.createElement("div");
+                itemDiv.classList.add("order-item");
+                
+                const itemName = document.createElement("span");
+                itemName.classList.add("item-name");
+                itemName.innerText = item.product?.name || "Product";
+                itemDiv.appendChild(itemName);
+                
+                const itemQty = document.createElement("span");
+                itemQty.classList.add("item-quantity");
+                itemQty.innerText = `Qty: ${item.quantity}`;
+                itemDiv.appendChild(itemQty);
+                
+                const itemPrice = document.createElement("span");
+                itemPrice.classList.add("item-price");
+                const lineTotal = (item.product?.price || 0) * item.quantity;
+                itemPrice.innerText = `$${lineTotal.toFixed(2)}`;
+                itemDiv.appendChild(itemPrice);
+                
+                itemsList.appendChild(itemDiv);
+            });
+            
+            itemsSection.appendChild(itemsList);
+            wrap.appendChild(itemsSection);
+        }
+
+        // Order total
+        const totalSection = document.createElement("div");
+        totalSection.classList.add("order-total-section");
+        
+        const totalP = document.createElement("h2");
+        totalP.innerHTML = `Order Total: <span class="total-amount">$${Number(order.shippingAmount ?? 0).toFixed(2)}</span>`;
+        totalSection.appendChild(totalP);
+        
+        wrap.appendChild(totalSection);
+
+        // Action button
+        const backBtn = document.createElement("button");
+        backBtn.classList.add("btn", "btn-success", "continue-btn");
+        backBtn.innerText = "Continue Shopping";
+        backBtn.addEventListener("click", () => loadHome());
+        wrap.appendChild(backBtn);
+
+        main.appendChild(wrap);
+    }
+}
+
+function showCart() {
+    cartService.loadCart();
+    cartService.loadCartPage();
+}
 
 
 

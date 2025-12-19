@@ -2,26 +2,56 @@
     <h3>Filter</h3>
 
     <div class="form-floating mb-3">
-        <select name="" id="category-select" class="form-select"
-            onchange="setCategory(this)"
-        >
+        <select name="" id="category-select" class="form-select" onchange="setCategory(this)">
             <option value="0">Show All</option>
         </select>
         <label for="category-select">Category</label>
     </div>
-    <div>
-        <label for="min-price" class="form-label">Minimum Price: $ <span id="min-price-display">0</span></label>
-        <input type="range" class="form-range" id="min-price" min="0" max="200" value="0" oninput="setMinPrice(this)">
-    </div>
-    <div>
-        <label for="max-price" class="form-label">Maximum Price: $ <span id="max-price-display">200</span></label>
-        <input type="range" class="form-range" id="max-price" min="0" max="200" value="200" oninput="setMaxPrice(this)">
+
+    <div class="slider-card">
+    <h5>Price Range</h5>
+
+    <div class="price-content">
+        <div>
+            <label>Min</label>
+            <p id="min-price-display">$0</p>
+        </div>
+        <div>
+            <label>Max</label>
+            <p id="max-price-display">$200</p>
+        </div>
     </div>
 
+    <div class="range-slider">
+        <div class="slider-track"></div>
+
+        <input
+            id="min-price"
+            type="range"
+            class="min-price"
+            min="0"
+            max="200"
+            value="0"
+            step="10"
+            oninput="onPriceSliderChange()"
+        />
+
+        <input
+            id="max-price"
+            type="range"
+            class="max-price"
+            min="0"
+            max="200"
+            value="200"
+            step="10"
+            oninput="onPriceSliderChange()"
+        />
+    </div>
+</div>
+
+
     <div class="form-floating mb-3">
-        <select name="" id="subcategory-select" class="form-select"
-                onchange="setSubcategory(this)"
-        >
+        <select name="" id="subcategory-select" class="form-select" onchange="setSubcategory(this)">
             <option value="">Show All</option>
             <option>Action</option>
             <option>Adventure</option>
