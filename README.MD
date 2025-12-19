@@ -50,3 +50,6 @@
 * Interesting Piece of Code
 <img width="720" height="480" alt="image" src="https://github.com/user-attachments/assets/a93c0118-04c6-4950-a621-381e1be50d35" />
 
+
+This piece of code creates the register pop up for new users to be able to create an account. They can later edit their accounts by
+going to their profile page.
